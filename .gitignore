@@ -1,0 +1,136 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Data files
+
+# Ignore working directory
+my_work/
+
+# Ignore scratch directory
+scratch/
+
+# Sweave files
+*.Rnw
+*.log
+*.synctex.gz
+*-concordance.tex
+*.tex
+
+# Mac only file - not needed by other systems
+.DS_Store
+
+# Session Data files
+.RData
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+/*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
+rsconnect/
+.Rproj.user
+
+# Rprojects
+*.Rproj
+
+# Produce README file; for debugging
+README.html
+*.mlx
+MANIFEST
+build
+*.m
+dist
+_build
+docs/man/*.gz
+docs/source/api/generated
+docs/source/config.rst
+docs/gh-pages
+notebook/i18n/*/LC_MESSAGES/*.mo
+notebook/i18n/*/LC_MESSAGES/nbjs.json
+notebook/static/components
+notebook/static/style/*.min.css*
+notebook/static/*/js/built/
+notebook/static/*/built/
+notebook/static/built/
+notebook/static/*/js/main.min.js*
+notebook/static/lab/*bundle.js
+node_modules
+*.py[co]
+__pycache__
+*.egg-info
+*~
+*.bak
+.ipynb_checkpoints
+.tox
+.DS_Store
+\#*#
+.#*
+.coverage
+src
+
+*.swp
+*.map
+.idea/
+Read the Docs
+config.rst
+
+/.project
+/.pydevproject
+
+package-lock.json
+
+# Windows default autosave extension
+*.asv
+
+# OSX / *nix default autosave extension
+*.m~
+
+# RMarkdown Stuff
+*_files
+
+# Compiled MEX binaries (all platforms)
+*.mex*
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Simulink code generation folders
+slprj/
+sccprj/
+
+# Matlab code generation folders
+codegen/
+
+# Simulink autosave extension
+*.autosave
+
+# Octave session info
+octave-workspacen
