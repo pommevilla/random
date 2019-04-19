@@ -1,1 +1,1 @@
-# random
+Random things that are too small or don't fit neatly into other repos.
