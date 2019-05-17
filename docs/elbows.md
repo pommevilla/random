@@ -1,7 +1,5 @@
 Elbows: Another look at the elbow method using first-order differences
 ================
-Paul Villanueva
-5/15/2019
 
 A common problem encountered in research is deciding how many components or clusters to use in your analysis. For example:
 
@@ -13,7 +11,7 @@ If we use too few parameters, then we are unable to accurately describe the beha
 
 Consider the following plot of abundance of genes by clusters.
 
-![](elbows_files/figure-markdown_github/unnamed-chunk-2-1.png)
+<img src="elbows_files/figure-markdown_github/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
 
 It's clear we need to include the first couple of clusters so our probes will pick up a reasonable amount of our gene targets, but how many clusters should we include? Our intuition tells us to include the first 6 clusters, up to and including ADE13856. But *why* does our intuition tell us that this point is special? What is it about the curve at this point that draws our eyes to it?
 
@@ -39,15 +37,15 @@ As seen above, there are several methods for analytically determing the elbow of
 
 Less formally, we're assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. As an example, let's look at the first-order differences for the plot above and see what cutoff point maximizes that score:
 
-![](elbows_files/figure-markdown_github/unnamed-chunk-3-1.png)
+<img src="elbows_files/figure-markdown_github/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
 This lines up with our intuition as to which clusters we should include:
 
-![](elbows_files/figure-markdown_github/unnamed-chunk-4-1.png)
+<img src="elbows_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 However, it might be worth investigating other inclusion thresholds around this elbow; if the scores around this point are sufficiently close, then we might have some additional information that will inform our cutoff choice. For instance, if there is a significant cost in adding more components, we might err for fewer components if the first-order difference is roughly the same. One suggestion could be to look at cutoffs whose first-order difference is within 10% of the elbow point:
 
-![](elbows_files/figure-markdown_github/unnamed-chunk-5-1.png)
+<img src="elbows_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
 
 This 10% value was chosen completely arbitrarily. There are probably smarter ways to choose this cutoff. For instance, we could simulate "significant" first-order differences:
 
