@@ -2,6 +2,9 @@ name: Random Things
 output_dir: docs
 navbar:
   title: ''
+  left:
+  - text: Elbows
+    href: elbows.html'
     
 output:
   html_document:

@@ -2,7 +2,7 @@
 title: "Elbows: Another look at the elbow method using first-order differences"
 author: "Paul Villanueva"
 date: "5/15/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include = FALSE}
