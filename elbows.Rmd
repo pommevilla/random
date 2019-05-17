@@ -1,0 +1,80 @@
+---
+title: "Elbows"
+author: "Paul Villanueva"
+date: "5/15/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+library(janitor)
+library(reshape2)
+library(tidyverse)
+library(readxl)
+
+theme_set(theme_light())
+```
+
+# Elbows
+
+
+```{r}
+amoa.cluster_info <- read.delim("amoa_parsed.tsv") %>% 
+  arrange(-Abundance) %>% 
+  mutate('cumulative' = cumsum(Abundance) / sum(Abundance) * max(amoa.cluster_info$Abundance))
+```
+
+```{r}
+first_diffs <- function(pos){
+  left <- (amoa.cluster_info[pos, 4] - amoa.cluster_info[1, 4]) / pos
+  right <- (amoa.cluster_info[nrow(amoa.cluster_info), 4] - amoa.cluster_info[pos, 4]) / (nrow(amoa.cluster_info) - pos)
+  return(left - right)
+}
+amoa.cluster_info$first_diffs <- sapply(1:nrow(amoa.cluster_info), f)
+```
+
+
+```{r}
+amoa.cluster_info %>% 
+  ggplot(aes(x = reorder(Gene, -Abundance), group = 1)) +
+  geom_line(aes(y = cumulative, color = "#7CAE00")) +
+  geom_line(aes(y = Abundance, color = "#F8766D")) +
+  geom_line(aes(y = Presence, color = "#00BFC4")) +
+  geom_point(aes(y = Abundance), size = 0.25) + 
+  geom_point(aes(y = Presence), size = 0.25) + 
+  geom_point(aes(y = cumulative), size = 0.25) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_color_discrete(name = "Measure", labels = c("Cumulative Abundance", "Abundance", "Presence"),
+                       limits = c("#7CAE00", "#F8766D", "#00BFC4")) +
+  labs(x = "Gene")
+```
+'
+
+```{r}
+amoa.cluster_info[is.na(amoa.cluster_info)] <- 0
+elbow <- which.max(amoa.cluster_info$first_diffs)
+other_genes_of_interest <- which(amoa.cluster_info$first_diffs > 0.9 * amoa.cluster_info[elbow, 5])
+                                                                                                    
+
+amoa.cluster_info %>% 
+  na.omit() %>% 
+  ggplot(aes(x = reorder(Gene, -Abundance), group = 1, y = first_diffs)) +
+  geom_point() +
+  geom_line() + 
+  geom_vline(xintercept = elbow, 
+             color = "red",
+             linetype = "dashed") + 
+  geom_vline(xintercept = c(min(other_genes_of_interest), max(other_genes_of_interest)),
+             linetype = "dashed", 
+             color = "blue") +
+  labs(x = "",
+       y = "First-order difference",
+       title = "Which clusters should we include in our primer design?",
+       subtitle = "Red line indicates maximal first-order difference; blue lines indicate 10% neighborhood") +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.ticks = element_blank())
+```
+
