@@ -1,0 +1,10 @@
+name: Random Things
+output_dir: docs
+navbar:
+  title: ''
+    
+output:
+  html_document:
+    theme: lumen
+    lib_dir: site_libs
+    self_contained: no
