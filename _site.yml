@@ -4,7 +4,7 @@ navbar:
   title: ''
   left:
   - text: Elbows
-    href: elbows.html'
+    href: elbows.html
     
 output:
   html_document:
