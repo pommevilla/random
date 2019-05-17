@@ -1,7 +1,5 @@
 ---
 title: "Elbows: Another look at the elbow method using first-order differences"
-author: "Paul Villanueva"
-date: "5/15/2019"
 output: github_document
 ---
 
@@ -29,13 +27,13 @@ If we use too few parameters, then we are unable to accurately describe the beha
 
 Consider the following plot of abundance of genes by clusters.
 
-```{r, echo = FALSE}
+```{r}
 amoa.cluster_info <- read.delim("./data/amoa/amoa_parsed.tsv") %>% 
   arrange(-Abundance) %>% 
   mutate('cumulative' = cumsum(Abundance) / sum(Abundance) * max(Abundance))
 ```
 
-```{r, echo = FALSE}
+```{r}
 amoa.cluster_info %>% 
   ggplot(aes(x = reorder(Gene, -Abundance), group = 1)) +
   geom_line(aes(y = cumulative, color = "#7CAE00")) +
@@ -77,7 +75,7 @@ As seen above, there are several methods for analytically determing the elbow of
 
 Less formally, we're assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. As an example, let's look at the first-order differences for the plot above and see what cutoff point maximizes that score:
 
-```{r, warning = FALSE, echo = FALSE}
+```{r, warning = FALSE}
 first_diffs <- function(pos){
   left <- (amoa.cluster_info[pos, 4] - amoa.cluster_info[1, 4]) / pos
   right <- (amoa.cluster_info[nrow(amoa.cluster_info), 4] - amoa.cluster_info[pos, 4]) / (nrow(amoa.cluster_info) - pos)
@@ -108,7 +106,7 @@ amoa.cluster_info %>%
 
 This lines up with our intuition as to which clusters we should include:
 
-```{r, echo = FALSE}
+```{r}
 amoa.cluster_info %>% 
   mutate(first_diffs = first_diffs / max(first_diffs) * max(Abundance)) %>% 
   ggplot(aes(x = reorder(Gene, -Abundance), group = 1)) +
@@ -137,7 +135,7 @@ amoa.cluster_info %>%
 
 However, it might be worth investigating other inclusion thresholds around this elbow; if the scores around this point are sufficiently close, then we might have some additional information that will inform our cutoff choice. For instance, if there is a significant cost in adding more components, we might err for fewer components if the first-order difference is roughly the same. One suggestion could be to look at cutoffs whose first-order difference is within 10% of the elbow point:
 
-```{r, warning = FALSE, echo = FALSE}
+```{r, warning = FALSE}
 other_genes_of_interest <- which(amoa.cluster_info$first_diffs > 0.90 * amoa.cluster_info[elbow, 5])
 
 amoa.cluster_info %>% 
