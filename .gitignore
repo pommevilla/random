@@ -3,6 +3,7 @@
 .Rapp.history
 
 # Data files
+data/
 
 # Ignore working directory
 my_work/
