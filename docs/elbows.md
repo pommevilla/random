@@ -26,7 +26,7 @@ Some other mentions of the elbow of a graph:
 
 As seen above, there are several methods for analytically determing the elbow of the graph, but they are all somewhat computationally expensive and difficult to communicate. The method I've chosen to find the elbow of a graph is based on the [first-order difference](https://en.wikipedia.org/wiki/Numerical_differentiation). The method is as follows:
 
-1.  Let ![f\\colon X\\to \\mathbb{R}](https://latex.codecogs.com/png.latex?f%5Ccolon%20X%5Cto%20%5Cmathbb%7BR%7D "f\colon X\to \mathbb{R}") be some benefit function, and choose some ![t \\in X](https://latex.codecogs.com/png.latex?t%20%5Cin%20X "t \in X").
+1.  Let ![f\\colon X\\to \\mathbb{R}](https://latex.codecogs.com/png.latex?f%5Ccolon%20X%5Cto%20%5Cmathbb%7BR%7D "f\colon X\to \mathbb{R}") be some *cumulative* benefit function, and choose some ![t \\in X](https://latex.codecogs.com/png.latex?t%20%5Cin%20X "t \in X").
 2.  Calculate the first-order differences of ![f](https://latex.codecogs.com/png.latex?f "f") on ![\[0, t\]](https://latex.codecogs.com/png.latex?%5B0%2C%20t%5D "[0, t]") and on ![\[t, \\sup{X}\]](https://latex.codecogs.com/png.latex?%5Bt%2C%20%5Csup%7BX%7D%5D "[t, \sup{X}]"). That is,
 
     ![f\_{t^-} = \\frac{f(t) - f(0)}{t}](https://latex.codecogs.com/png.latex?f_%7Bt%5E-%7D%20%3D%20%5Cfrac%7Bf%28t%29%20-%20f%280%29%7D%7Bt%7D "f_{t^-} = \frac{f(t) - f(0)}{t}")
@@ -39,17 +39,30 @@ As seen above, there are several methods for analytically determing the elbow of
 3.  Assign a score to ![fod\_t](https://latex.codecogs.com/png.latex?fod_t "fod_t") to ![t](https://latex.codecogs.com/png.latex?t "t") via ![fod\_t = f\_{t^-} - f\_{t^+}](https://latex.codecogs.com/png.latex?fod_t%20%3D%20f_%7Bt%5E-%7D%20-%20f_%7Bt%5E%2B%7D "fod_t = f_{t^-} - f_{t^+}").
 4.  Repeat this process for all choice ![t \\in X](https://latex.codecogs.com/png.latex?t%20%5Cin%20X "t \in X"). The elbow of ![f](https://latex.codecogs.com/png.latex?f "f") is the choice of ![t](https://latex.codecogs.com/png.latex?t "t") that maximizes ![fod](https://latex.codecogs.com/png.latex?fod "fod"). That is, the elbow point is ![\\arg \\max fod\_t](https://latex.codecogs.com/png.latex?%5Carg%20%5Cmax%20fod_t "\arg \max fod_t").
 
-Less formally, we're assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. As an example, let's look at the first-order differences for the plot above and see what cutoff point maximizes that score:
+Less formally, we're assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. A simple R script for finding the first-order differences for each observation in a dataframe `df` might look like:
 
-<img src="elbows_files/figure-markdown_github/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
+``` r
+fo_difference <- function(pos){
+  left <- (amoa.cluster_info[pos, 4] - amoa.cluster_info[1, 4]) / pos
+  right <- (amoa.cluster_info[nrow(amoa.cluster_info), 4] - amoa.cluster_info[pos, 4]) / (nrow(amoa.cluster_info) - pos)
+  return(left - right)
+}
+df$fo_diffs <- sapply(1:nrow(df), fo_difference)
+```
 
-This lines up with our intuition as to which clusters we should include:
+Note that this calculation of the first-order differences on either side of the point assumes that the observations are equally spaced; that is, the distance between each observation is uniform. This is usually the case for these kind of problems, but this is an assumption you should double check before using the above function. From here, we simply take the max of `df$fo_diffs` to find our elbow point.
+
+As an example of this method, let's look at the first-order differences for the plot above and see what cutoff point maximizes that difference:
 
 <img src="elbows_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
-However, it might be worth investigating other inclusion thresholds around this elbow; if the scores around this point are sufficiently close, then we might have some additional information that will inform our cutoff choice. For instance, if there is a significant cost in adding more components, we might err for fewer components if the first-order difference is roughly the same. One suggestion could be to look at cutoffs whose first-order difference is within 10% of the elbow point:
+This lines up with our intuition as to which clusters we should include:
 
 <img src="elbows_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+
+However, it might be worth investigating other inclusion thresholds around this elbow; if the scores around this point are sufficiently close, then we might have some additional information that will inform our cutoff choice. For instance, if there is a significant cost in adding more components, we might err for fewer components if the first-order difference is roughly the same. One suggestion could be to look at cutoffs whose first-order difference is within 10% of the elbow point:
+
+<img src="elbows_files/figure-markdown_github/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
 
 This 10% value was chosen completely arbitrarily. There are probably smarter ways to choose this cutoff. For instance, we could simulate "significant" first-order differences:
 
