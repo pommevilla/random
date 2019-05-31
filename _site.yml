@@ -3,6 +3,8 @@ output_dir: docs
 navbar:
   title: ''
   left:
+  - text: Index
+    href: index.html
   - text: Elbows
     href: elbows.html
     
