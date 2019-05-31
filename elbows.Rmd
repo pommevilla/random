@@ -71,7 +71,7 @@ As seen above, there are several methods for analytically determing the elbow of
 1. Let $f\colon X\to \mathbb{R}$ be some *cumulative* benefit function, and choose some $t \in X$. 
 2. Calculate the first-order differences of $f$ on $[0, t]$ and on $[t, \sup{X}]$. That is, $$f_{t^-} = \frac{f(t) - f(0)}{t}$$ and $$f_{t^+} = \frac{f(\sup{X}) - f(t)}{\sup{X} - t}$$. Note that this is just calculating the slope of the secant lines through $t$ from either end of $X$.
 3. Assign a score to $fod_t$ to $t$ via $fod_t = f_{t^-} - f_{t^+}$.
-4. Repeat this process for all choice $t \in X$. The elbow of $f$ is the choice of $t$ that maximizes $fod$. That is, the elbow point is $\arg \max fod_t$.
+4. Repeat this process for all choices $t \in X$. The elbow of $f$ is the choice of $t$ that maximizes $fod$. That is, the elbow point is $\arg \max fod_t$.
 
 Less formally, we're assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. A simple R script for finding the first-order differences for each observation in a dataframe `df` might look like:
 
