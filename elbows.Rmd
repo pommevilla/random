@@ -68,12 +68,12 @@ Some other mentions of the elbow of a graph:
 
 As seen above, there are several methods for analytically determing the elbow of the graph, but they are all somewhat computationally expensive and difficult to communicate. The method I've chosen to find the elbow of a graph is based on the [first-order difference](https://en.wikipedia.org/wiki/Numerical_differentiation). The method is as follows:
 
-1. Let $f\colon X\to \mathbb{R}$ be some *cumulative* benefit function, and choose some $t \in X$. 
+1. Let $f\colon X\to \mathbb{R}$ be some benefit function, and choose some $t \in X$. 
 2. Calculate the first-order differences of $f$ on $[0, t]$ and on $[t, \sup{X}]$. That is, $$f_{t^-} = \frac{f(t) - f(0)}{t}$$ and $$f_{t^+} = \frac{f(\sup{X}) - f(t)}{\sup{X} - t}$$. Note that this is just calculating the slope of the secant lines through $t$ from either end of $X$.
 3. Assign a score to $fod_t$ to $t$ via $fod_t = f_{t^-} - f_{t^+}$.
 4. Repeat this process for all choices $t \in X$. The elbow of $f$ is the choice of $t$ that maximizes $fod$. That is, the elbow point is $\arg \max fod_t$.
 
-Less formally, we're assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. A simple R script for finding the first-order differences for each observation in a dataframe `df` might look like:
+Less formally, we're assigning a score to each cutoff point by separating the curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. A simple R script for finding the first-order differences for each observation in a dataframe `df` might look like:
 
 ```{r def.fo_difference, eval = FALSE, echo = TRUE}
 fo_difference <- function(pos){
@@ -84,7 +84,7 @@ fo_difference <- function(pos){
 df$fo_diffs <- sapply(1:nrow(df), fo_difference)
 ```
 
-Note that this calculation of the first-order differences on either side of the point assumes that the observations are equally spaced; that is, the distance between each observation is uniform. This is usually the case for these kind of problems, but this is an assumption you should double check before using the above function. From here, we simply take the max of `df$fo_diffs` to find our elbow point.
+Note that this calculation of the first-order differences on either side of the point assumes that the observations are equally spaced; that is, the distance between each observation is uniform. This is usually the case for these kind of problems, but this is an assumption you should check before using the above function. From here, we simply take the max of `df$fo_diffs` to find our elbow point.
 
 As an example of this method, let's look at the first-order differences for the plot above and see what cutoff point maximizes that difference:
 

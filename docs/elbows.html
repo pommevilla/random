@@ -326,19 +326,19 @@ $(document).ready(function () {
 </ul>
 <p>As seen above, there are several methods for analytically determing the elbow of the graph, but they are all somewhat computationally expensive and difficult to communicate. The method I’ve chosen to find the elbow of a graph is based on the <a href="https://en.wikipedia.org/wiki/Numerical_differentiation">first-order difference</a>. The method is as follows:</p>
 <ol style="list-style-type: decimal">
-<li>Let <span class="math inline">\(f\colon X\to \mathbb{R}\)</span> be some <em>cumulative</em> benefit function, and choose some <span class="math inline">\(t \in X\)</span>.</li>
+<li>Let <span class="math inline">\(f\colon X\to \mathbb{R}\)</span> be some benefit function, and choose some <span class="math inline">\(t \in X\)</span>.</li>
 <li>Calculate the first-order differences of <span class="math inline">\(f\)</span> on <span class="math inline">\([0, t]\)</span> and on <span class="math inline">\([t, \sup{X}]\)</span>. That is, <span class="math display">\[f_{t^-} = \frac{f(t) - f(0)}{t}\]</span> and <span class="math display">\[f_{t^+} = \frac{f(\sup{X}) - f(t)}{\sup{X} - t}\]</span>. Note that this is just calculating the slope of the secant lines through <span class="math inline">\(t\)</span> from either end of <span class="math inline">\(X\)</span>.</li>
 <li>Assign a score to <span class="math inline">\(fod_t\)</span> to <span class="math inline">\(t\)</span> via <span class="math inline">\(fod_t = f_{t^-} - f_{t^+}\)</span>.</li>
 <li>Repeat this process for all choices <span class="math inline">\(t \in X\)</span>. The elbow of <span class="math inline">\(f\)</span> is the choice of <span class="math inline">\(t\)</span> that maximizes <span class="math inline">\(fod\)</span>. That is, the elbow point is <span class="math inline">\(\arg \max fod_t\)</span>.</li>
 </ol>
-<p>Less formally, we’re assigning a score to each cutoff point by separating the benefit curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. A simple R script for finding the first-order differences for each observation in a dataframe <code>df</code> might look like:</p>
+<p>Less formally, we’re assigning a score to each cutoff point by separating the curve into two parts and calculating the difference in the average rates of change for both of these parts. We then choose our elbow point to be the cutoff point that maximizes this score. A simple R script for finding the first-order differences for each observation in a dataframe <code>df</code> might look like:</p>
 <pre class="r"><code>fo_difference &lt;- function(pos){
   left &lt;- (amoa.cluster_info[pos, 4] - amoa.cluster_info[1, 4]) / pos
   right &lt;- (amoa.cluster_info[nrow(amoa.cluster_info), 4] - amoa.cluster_info[pos, 4]) / (nrow(amoa.cluster_info) - pos)
   return(left - right)
 }
 df$fo_diffs &lt;- sapply(1:nrow(df), fo_difference)</code></pre>
-<p>Note that this calculation of the first-order differences on either side of the point assumes that the observations are equally spaced; that is, the distance between each observation is uniform. This is usually the case for these kind of problems, but this is an assumption you should double check before using the above function. From here, we simply take the max of <code>df$fo_diffs</code> to find our elbow point.</p>
+<p>Note that this calculation of the first-order differences on either side of the point assumes that the observations are equally spaced; that is, the distance between each observation is uniform. This is usually the case for these kind of problems, but this is an assumption you should check before using the above function. From here, we simply take the max of <code>df$fo_diffs</code> to find our elbow point.</p>
 <p>As an example of this method, let’s look at the first-order differences for the plot above and see what cutoff point maximizes that difference:</p>
 <p><img src="elbows_files/figure-html/plot.fo_difference.1-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This lines up with our intuition as to which clusters we should include:</p>
