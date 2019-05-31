@@ -1,8 +1,6 @@
 ---
 title: "Elbows: Another look at the elbow method using first-order differences"
-output:
-  github_document:
-    pandoc_args: --webtex
+output: html_document
 ---
 
 ```{r setup, include = FALSE}
