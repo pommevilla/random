@@ -110,9 +110,6 @@ package-lock.json
 # OSX / *nix default autosave extension
 *.m~
 
-# RMarkdown Stuff
-*_files
-
 # Compiled MEX binaries (all platforms)
 *.mex*
 
