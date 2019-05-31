@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, cache = TRUE, fig.align = 'center')
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE, warning = FALSE, fig.align = 'center')
 
 library(dplyr)
 library(ggplot2)
@@ -88,7 +88,7 @@ Note that this calculation of the first-order differences on either side of the 
 
 As an example of this method, let's look at the first-order differences for the plot above and see what cutoff point maximizes that difference:
 
-```{r plot.fo_difference.1, warning = FALSE}
+```{r plot.fo_difference.1}
 fo_difference <- function(pos){
   left <- (amoa.cluster_info[pos, 4] - amoa.cluster_info[1, 4]) / pos
   right <- (amoa.cluster_info[nrow(amoa.cluster_info), 4] - amoa.cluster_info[pos, 4]) / (nrow(amoa.cluster_info) - pos)
