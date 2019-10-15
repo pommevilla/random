@@ -1,0 +1,121 @@
+---
+title: "Plotting coverage"
+author: "Paul Villanueva"
+date: "10/15/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE, cache = TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Plotting coverage from BLAST results using ggplot2
+
+## Preparing the data
+
+The data we're working with is output from using BLAST against a single gene, where the queries are the metagenomes we're interested in. Assuming you used BLAST with `-outfmt 6`, extract the `sstart` and `send` columns from the `blast_results` file and save them to a new file by:
+
+```{bash blast_parse.1, eval = FALSE}
+cut -f 9,10 blast_results > regions_hit.tsv
+```
+
+Your file should look like this:
+
+
+```{bash example_head}
+head data/tet33.regions_hit.tsv
+```
+
+Then read the data into a dataframe with:
+
+```{r read_data.1}
+library(tidyverse)
+regions_hit <- read.delim("data/tet33.regions_hit.tsv",
+                          col.names = c("sstart", "send")) %>% 
+  mutate(forward = ifelse(sstart > send, 0, 1))
+head(regions_hit)
+```
+
+The mutate statement above adds an extra column indicating whether or not the match was on the reverse strand.
+
+## Plotting the coverage
+
+Now for the function itself: 
+
+```{r function_def.1}
+plot.coverage <- function(regions_hit.df, roi = NULL){
+  library(IRanges)
+  library(ggplot2)
+  
+  x.min = min(regions_hit.df[, 1:2])
+  x.max = max(regions_hit.df[, 1:2])
+  
+  forward_hits <- regions_hit.df[regions_hit.df$forward == 1, ]
+  
+  forward_hits.IR = IRanges(start = forward_hits[, 1],
+                            end = forward_hits[, 2])
+  forward_hits.cov <- coverage(forward_hits.IR)
+  
+  forward_coverage <- data.frame(pos = seq(x.min, x.max),
+                                 cov = unlist(mapply(rep, forward_hits.cov@values, forward_hits.cov@lengths)),
+                                 forward = as.factor(rep(1, x.max))
+                      )
+  
+  reverse_hits <- regions_hit.df[regions_hit.df$forward == 0, ]
+  reverse_hits.IR = IRanges(start = reverse_hits[, 2],
+                            end = reverse_hits[, 1])
+  
+  reverse_hits.cov <- coverage(reverse_hits.IR)
+  reverse_coverage <- data.frame(pos = seq(x.min, x.max),
+                                 cov = unlist(mapply(rep, reverse_hits.cov@values, reverse_hits.cov@lengths)),
+                                 forward = as.factor(rep(0, x.max))
+                      )
+  
+  total_coverage <- rbind(forward_coverage, reverse_coverage)
+  
+  y.max <-max(total_coverage$cov)
+
+  p <- ggplot(total_coverage, aes(x = pos, y = cov, color = forward)) +
+    geom_line() +
+    geom_hline(yintercept = 0) + 
+    scale_x_continuous(expand = c(0, x.min), limits = c(0, x.max)) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, y.max)) +
+    labs(x = "Position", 
+         y = "Depth",
+         title = "Coverage depth of...",
+         color = "Strand") + 
+    scale_color_manual(labels = c("Forward", "Reverse"), 
+                       values = c("#FF6633", "#99CC99")) +
+    theme_minimal() +
+    theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+  
+  if (!missing(roi)){
+    p <- p + geom_vline(xintercept = roi, linetype = "dashed")
+  }
+  
+  return(p)
+}
+```
+
+The `plot.coverage` function takes as input a dataframe with columns indicating the start, end, and whether or not we're on the forward or reverse strand. For example:
+
+```{r example.1}
+plot.coverage(regions_hit)
+```
+
+`plot.coverage` returns a `ggplot` object, so you can make any modifications you'd like to the graph in the usual way:
+
+```{r example.2}
+plot.coverage(regions_hit) + 
+  labs(title = "Coverage depth of tet33 in soil column 1 metagenomes")
+```
+
+Additionally, `plot.coverage` takes an optional `roi` parameter to indiciate a *r*egion *o*f *i*nterest:
+
+```{r example.3}
+plot.coverage(regions_hit, c(300, 567)) + 
+  labs(title = "Coverage depth of tet33 in soil column 1 metagenomes",
+       subtitle = "Number of reads per position; dashed lines indicate region targeted by primer pair")
+```
+
+In the future, I will rewrite the function to use `data.table` and add an optional argument to separate the forward and reverse reads across the $x$ axis. 

@@ -10,9 +10,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Paul Villanueva" />
 
+<meta name="date" content="2019-10-15" />
 
-<title>Random</title>
+<title>Plotting coverage</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -293,18 +295,116 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Random</h1>
+<h1 class="title toc-ignore">Plotting coverage</h1>
+<h4 class="author">Paul Villanueva</h4>
+<h4 class="date">10/15/2019</h4>
 
 </div>
 
 
-<p>Random things that are too small or don’t fit neatly into other repos.</p>
-<ul>
-<li><a href="https://nbviewer.jupyter.org/github/pommevilla/random/blob/master/days-in-months-pd.ipynb">Adding days in each month from a date range in Pandas</a></li>
-<li><a href="https://pommevilla.github.io/random/elbows.html">Elbows: Another look at the elbow method using first-order differences</a></li>
-<li><a href="https://editor.p5js.org/pommevilla/full/Kx3hJmBsJ">Circles: Visualizing persistent homology</a></li>
-<li><a href="ggcoverage.html">Plotting BLAST Coverage in ggplot2</a></li>
-</ul>
+<div id="plotting-coverage-from-blast-results-using-ggplot2" class="section level1">
+<h1>Plotting coverage from BLAST results using ggplot2</h1>
+<div id="preparing-the-data" class="section level2">
+<h2>Preparing the data</h2>
+<p>The data we’re working with is output from using BLAST against a single gene, where the queries are the metagenomes we’re interested in. Assuming you used BLAST with <code>-outfmt 6</code>, extract the <code>sstart</code> and <code>send</code> columns from the <code>blast_results</code> file and save them to a new file by:</p>
+<pre class="bash"><code>cut -f 9,10 blast_results &gt; regions_hit.tsv</code></pre>
+<p>Your file should look like this:</p>
+<pre class="bash"><code>head data/tet33.regions_hit.tsv</code></pre>
+<pre><code>## 969  820
+## 161  12
+## 46   103
+## 923  1066
+## 722  573
+## 293  144
+## 327  178
+## 173  24
+## 861  745
+## 1005 856</code></pre>
+<p>Then read the data into a dataframe with:</p>
+<pre class="r"><code>library(tidyverse)
+regions_hit &lt;- read.delim(&quot;data/tet33.regions_hit.tsv&quot;,
+                          col.names = c(&quot;sstart&quot;, &quot;send&quot;)) %&gt;% 
+  mutate(forward = ifelse(sstart &gt; send, 0, 1))
+head(regions_hit)</code></pre>
+<pre><code>##   sstart send forward
+## 1    161   12       0
+## 2     46  103       1
+## 3    923 1066       1
+## 4    722  573       0
+## 5    293  144       0
+## 6    327  178       0</code></pre>
+<p>The mutate statement above adds an extra column indicating whether or not the match was on the reverse strand.</p>
+</div>
+<div id="plotting-the-coverage" class="section level2">
+<h2>Plotting the coverage</h2>
+<p>Now for the function itself:</p>
+<pre class="r"><code>plot.coverage &lt;- function(regions_hit.df, roi = NULL){
+  library(IRanges)
+  library(ggplot2)
+  
+  x.min = min(regions_hit.df[, 1:2])
+  x.max = max(regions_hit.df[, 1:2])
+  
+  forward_hits &lt;- regions_hit.df[regions_hit.df$forward == 1, ]
+  
+  forward_hits.IR = IRanges(start = forward_hits[, 1],
+                            end = forward_hits[, 2])
+  forward_hits.cov &lt;- coverage(forward_hits.IR)
+  
+  forward_coverage &lt;- data.frame(pos = seq(x.min, x.max),
+                                 cov = unlist(mapply(rep, forward_hits.cov@values, forward_hits.cov@lengths)),
+                                 forward = as.factor(rep(1, x.max))
+                      )
+  
+  reverse_hits &lt;- regions_hit.df[regions_hit.df$forward == 0, ]
+  reverse_hits.IR = IRanges(start = reverse_hits[, 2],
+                            end = reverse_hits[, 1])
+  
+  reverse_hits.cov &lt;- coverage(reverse_hits.IR)
+  reverse_coverage &lt;- data.frame(pos = seq(x.min, x.max),
+                                 cov = unlist(mapply(rep, reverse_hits.cov@values, reverse_hits.cov@lengths)),
+                                 forward = as.factor(rep(0, x.max))
+                      )
+  
+  total_coverage &lt;- rbind(forward_coverage, reverse_coverage)
+  
+  y.max &lt;-max(total_coverage$cov)
+
+  p &lt;- ggplot(total_coverage, aes(x = pos, y = cov, color = forward)) +
+    geom_line() +
+    geom_hline(yintercept = 0) + 
+    scale_x_continuous(expand = c(0, x.min), limits = c(0, x.max)) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, y.max)) +
+    labs(x = &quot;Position&quot;, 
+         y = &quot;Depth&quot;,
+         title = &quot;Coverage depth of...&quot;,
+         color = &quot;Strand&quot;) + 
+    scale_color_manual(labels = c(&quot;Forward&quot;, &quot;Reverse&quot;), 
+                       values = c(&quot;#FF6633&quot;, &quot;#99CC99&quot;)) +
+    theme_minimal() +
+    theme(panel.border = element_rect(color = &quot;black&quot;, fill = NA, size = 1))
+  
+  if (!missing(roi)){
+    p &lt;- p + geom_vline(xintercept = roi, linetype = &quot;dashed&quot;)
+  }
+  
+  return(p)
+}</code></pre>
+<p>The <code>plot.coverage</code> function takes as input a dataframe with columns indicating the start, end, and whether or not we’re on the forward or reverse strand. For example:</p>
+<pre class="r"><code>plot.coverage(regions_hit)</code></pre>
+<p><img src="ggcoverage_files/figure-html/example.1-1.png" width="672" /></p>
+<p><code>plot.coverage</code> returns a <code>ggplot</code> object, so you can make any modifications you’d like to the graph in the usual way:</p>
+<pre class="r"><code>plot.coverage(regions_hit) + 
+  labs(title = &quot;Coverage depth of tet33 in soil column 1 metagenomes&quot;)</code></pre>
+<p><img src="ggcoverage_files/figure-html/example.2-1.png" width="672" /></p>
+<p>Additionally, <code>plot.coverage</code> takes an optional <code>roi</code> parameter to indiciate a <em>r</em>egion <em>o</em>f <em>i</em>nterest:</p>
+<pre class="r"><code>plot.coverage(regions_hit, c(300, 567)) + 
+  labs(title = &quot;Coverage depth of tet33 in soil column 1 metagenomes&quot;,
+       subtitle = &quot;Number of reads per position; dashed lines indicate region targeted by primer pair&quot;)</code></pre>
+<p><img src="ggcoverage_files/figure-html/example.3-1.png" width="672" /></p>
+<p>In the future, I will rewrite the function to use <code>data.table</code> and add an optional argument to separate the forward and reverse reads across the <span class="math inline">\(x\)</span> axis.</p>
+</div>
+</div>
 
 <p><br>
 <br>

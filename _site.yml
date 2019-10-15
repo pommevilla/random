@@ -7,7 +7,8 @@ navbar:
     href: index.html
   - text: Elbows
     href: elbows.html
-    
+  - text: Plotting BLAST Coverage
+    href: ggcoverage.html
 output:
   html_document:
     theme: lumen
