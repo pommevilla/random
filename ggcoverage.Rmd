@@ -79,7 +79,7 @@ plot.coverage <- function(regions_hit.df, roi = NULL){
     geom_line() +
     geom_hline(yintercept = 0) + 
     scale_x_continuous(expand = c(0, x.min), limits = c(0, x.max)) +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, y.max)) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, y.max * 1.1)) +
     labs(x = "Position", 
          y = "Depth",
          title = "Coverage depth of...",
