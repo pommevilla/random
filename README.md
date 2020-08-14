@@ -6,3 +6,4 @@ Things that are too small or don't fit neatly into other repos.
 * [Elbows: Another look at the elbow method using first-order differences](https://pommevilla.github.io/random/elbows.html)
 * [Circles: Visualizing persistent homology](https://editor.p5js.org/pommevilla/full/Kx3hJmBsJ)
 * [Plotting BLAST Coverage in ggplot2](https://pommevilla.github.io/random/ggcoverage.html)
+* [Visualizing Iowa population by county over years](https://pommevilla.github.io/random/iowa-pops.html)

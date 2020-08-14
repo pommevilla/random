@@ -9,6 +9,8 @@ navbar:
     href: elbows.html
   - text: Plotting BLAST Coverage
     href: ggcoverage.html
+  - text: Iowa County Populations
+    href: iowa-pops.html
 output:
   html_document:
     theme: lumen
